@@ -11,9 +11,35 @@ You should clone the master branch to your personal computer. Get a fresh instal
 * Python 3.8
 * 'python' command in terminal/cmd mapped to Python 3.8 exe
 
+### Setting Up
+
+Getting this onto you personal computer can be done by following the instructions below.
+
+* Setting up Git to work with your terminal/cmd
+* In terminal
+  * Move to directory you want the folder to live in
+  * Git clone https://github.com/PeZeqo/capstone_pokemon_bci.git
+
+
 ### Running
 
 We currently only have a testing window coded, but that can be run through the launch scripts.
 
 * Launch.sh  for Unix
 * Launch.bat for Windows
+
+
+### Contributing
+
+We want to make sure that we keep the master branch clean, as in it will always contain functional, reviewed code. Contributing to this should be done by working and testing in sperate branches from master, and then creating pull requests to merge so that others can review before we update our master branch.
+
+To do this locally you can follow this guide:
+
+* In terminal move to the directory containing the repo
+* git checkout -b new_branch_name
+* Write code and make changes
+* git add -A
+* git commit -m "brief message about what this set of changes is doing"
+* git push origin
+  * if this branch has never been pushed back to the remote repo outside of your local PC run this:
+  * git push --set-upstream origin new_branch_name
