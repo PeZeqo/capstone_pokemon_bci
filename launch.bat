@@ -1,0 +1,1 @@
+call capstone-env\Scripts\activate && python -m testing_window

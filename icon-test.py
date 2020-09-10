@@ -1,9 +1,7 @@
 import arcade
 import os
 from project_constants import SCREEN_WIDTH as screen_width, SCREEN_HEIGHT as screen_height
-
-# screen_width = 512
-# screen_height = 512
+from testing_window import testing_window
 
 # Open the window. Set the window title and dimensions (width and height)
 arcade.open_window(screen_width, screen_height, "Drawing Primitives Example")
