@@ -8,4 +8,12 @@ You should clone the master branch to your personal computer. Get a fresh instal
 
 ### Prerequisites
 
-Python 3.8
+* Python 3.8
+* 'python' command in terminal/cmd mapped to Python 3.8 exe
+
+### Running
+
+We currently only have a testing window coded, but that can be run through the launch scripts.
+
+* Launch.sh  for Unix
+* Launch.bat for Windows
