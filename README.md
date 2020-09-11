@@ -18,7 +18,7 @@ Getting this onto you personal computer can be done by following the instruction
 * Setting up Git to work with your terminal/cmd
 * In terminal
   * Move to directory you want the folder to live in
-  * Git clone https://github.com/PeZeqo/capstone_pokemon_bci.git
+  * run "git clone https://github.com/PeZeqo/capstone_pokemon_bci.git"
 
 
 ### Running
@@ -38,7 +38,7 @@ To do this locally you can follow this guide:
 * In terminal move to the directory containing the repo
 * git checkout -b new_branch_name
 * Write code and make changes
-* git add -A
+* git add -A"
 * git commit -m "brief message about what this set of changes is doing"
 * git push origin
   * if this branch has never been pushed back to the remote repo outside of your local PC run this:
