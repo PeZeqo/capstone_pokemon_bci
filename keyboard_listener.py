@@ -12,7 +12,7 @@ class keyboard_listener:
             # Stop listener
             return False
 
-    def being_listener(self):
+    def begin_listener(self):
         # Collect events until released
         with Listener(
                 on_press=self.on_press,

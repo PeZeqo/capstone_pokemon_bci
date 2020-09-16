@@ -18,7 +18,8 @@ class testing_walking_window(testing_window.testing_window, arcade.Window):
 
     def load_background(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        background_dir = os.path.join(dir_path, 'backgrounds')
+        image_dir = os.path.join(dir_path, 'images')
+        background_dir = os.path.join(image_dir, 'backgrounds')
 
         print(os.path.isfile(os.path.join(background_dir, 'walking_screen.png')))
 

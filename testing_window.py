@@ -32,19 +32,22 @@ class testing_window(arcade.Window):
 
         # self.flicker_frequency = [2] * 4 #range(5, 25, 5)
 
-        off_bits = 2
+        off_bits = int(PATTERN_LENGTH / 3)
         sample_list = [1] * (PATTERN_LENGTH - off_bits) + [0] * off_bits
         for x in range(4):
             self.flicker_frequency.append(random.sample(sample_list, len(sample_list)))
 
+        self.load_icons()
+
+    def load_icons(self):
         # Set up dir paths
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        icon_dir = os.path.join(dir_path, 'icons')
+        image_dir = os.path.join(dir_path, 'images')
+        icon_dir = os.path.join(image_dir, 'icons')
         icon_list = os.listdir(icon_dir)
 
         for icon in icon_list:
             self.texture_list.append(arcade.load_texture(os.path.join(icon_dir, icon)))
-
 
     def on_key_press(self, key, key_modifiers):
         if (key == arcade.key.UP):
@@ -66,8 +69,6 @@ class testing_window(arcade.Window):
         self.on_draw()
         self.tick %= FREQUENCY
         self.tick += 1
-        if self.tick % FREQUENCY == 0:
-            print("1 second passed")
 
     def draw_board(self):
         # Draw a grid
