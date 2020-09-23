@@ -49,9 +49,9 @@ To do this locally you can follow this guide:
 * Have someone review it and approve it
 * Merge and delete the branch
   
-Small note: if you use a new library, make sure to update requirements.txt to reflect that new dependency. You can do the following to check what to update the file too:
+Small note: if you use a new library, make sure to update Requirement.txt to reflect that new dependency. You can do the following to check what to update the file too:
 
 * in cmd/terminal run "python -m pip freeze"
 * this should print the whole list of python libraries you have
-* copy this into requirements.txt
+* copy this into Requirement.txt
 * make sure this update is pushed as part of your branch
