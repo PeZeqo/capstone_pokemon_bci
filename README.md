@@ -24,7 +24,7 @@ Getting this onto you personal computer can be done by following the instruction
 ### Running
 
 Please first ensure that you have all required libraries installed for Python. This can be done by running the following in cmd/terminal: 
-* python -m pip install -r requirements.txt'
+* python -m pip install -r requirements.txt
 
 We currently only have a testing window coded, but that can be run through the launch scripts.
 
