@@ -23,6 +23,7 @@ Getting this onto you personal computer can be done by following the instruction
 
 ### Running
 
+Please first ensure that you have all required libraries installed for Python. This can be done by running: 'python -m pip install -r requirements.txt'
 We currently only have a testing window coded, but that can be run through the launch scripts.
 
 * Launch.sh  for Unix
@@ -38,8 +39,19 @@ To do this locally you can follow this guide:
 * In terminal move to the directory containing the repo
 * git checkout -b new_branch_name
 * Write code and make changes
-* git add -A"
+* git add -A
 * git commit -m "brief message about what this set of changes is doing"
 * git push origin
   * if this branch has never been pushed back to the remote repo outside of your local PC run this:
   * git push --set-upstream origin new_branch_name
+* From here you can come to this repo and move to your branch using the branch selector
+* Make a new pull request from there to merge into master
+* Have someone review it and approve it
+* Merge and delete the branch
+  
+Small note: if you use a new library, make sure to update requirements.txt to reflect that new dependency. You can do the following to check what to update the file too:
+
+* in cmd/terminal run "python -m pip freeze"
+* this should print the whole list of python libraries you have
+* copy this into requirements.txt
+* make sure this update is pushed as part of your branch
