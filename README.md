@@ -23,11 +23,16 @@ Getting this onto you personal computer can be done by following the instruction
 
 ### Running
 
-Please first ensure that you have all required libraries installed for Python. This can be done by running: 'python -m pip install -r requirements.txt'
+Please first ensure that you have all required libraries installed for Python. This can be done by running the following in cmd/terminal: 
+* python -m pip install -r requirements.txt'
+
 We currently only have a testing window coded, but that can be run through the launch scripts.
 
 * Launch.sh  for Unix
 * Launch.bat for Windows
+
+You can also run any python file with:
+* python -m FileName
 
 
 ### Contributing
