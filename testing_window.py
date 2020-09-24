@@ -51,18 +51,18 @@ class testing_window(arcade.Window):
             self.texture_list.append(arcade.load_texture(os.path.join(icon_dir, icon)))
 
     def on_key_press(self, key, key_modifiers):
-        if (key == arcade.key.UP):
-            self.key_presses["up"] += 1
-            print("Key pressed: {}".format("up"))
+        if (key == arcade.key.ZERO):
+            self.key_presses["zero"] += 1
+            print("Key pressed: {}".format("zero"))
         elif (key == arcade.key.DOWN):
-            self.key_presses["down"] += 1
-            print("Key pressed: {}".format("down"))
+            self.key_presses["one"] += 1
+            print("Key pressed: {}".format("one"))
         elif (key == arcade.key.LEFT):
-            self.key_presses["left"] += 1
-            print("Key pressed: {}".format("left"))
+            self.key_presses["two"] += 1
+            print("Key pressed: {}".format("two"))
         elif (key == arcade.key.RIGHT):
-            self.key_presses["right"] += 1
-            print("Key pressed: {}".format("right"))
+            self.key_presses["three"] += 1
+            print("Key pressed: {}".format("three"))
 
         # self.on_draw()
 
