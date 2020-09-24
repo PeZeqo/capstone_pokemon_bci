@@ -32,10 +32,11 @@ class testing_window(arcade.Window):
 
         # self.flicker_frequency = [2] * 4 #range(5, 25, 5)
 
-        off_bits = int(PATTERN_LENGTH / 3)
+        off_bits = 30
         sample_list = [1] * (PATTERN_LENGTH - off_bits) + [0] * off_bits
         for x in range(4):
-            self.flicker_frequency.append(random.sample(sample_list, len(sample_list)))
+            random.shuffle(sample_list)
+            self.flicker_frequency.append(sample_list)
 
         self.load_icons()
 

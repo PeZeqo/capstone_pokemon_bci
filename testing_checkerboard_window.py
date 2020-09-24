@@ -3,7 +3,7 @@ import os
 import arcade
 import random
 
-class testing_checkerboard_window(testing_window.testing_window, arcade.Window):
+class testing_checkerboard_window(testing_window.testing_window):
     background_width = 1600
     background_height = 900
     background = None
@@ -77,7 +77,7 @@ class testing_checkerboard_window(testing_window.testing_window, arcade.Window):
 
             arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, scale, 0)
 
-        self.highlight_selection()
+        # self.highlight_selection()
 
     def main():
         game = testing_checkerboard_window(1600, 900 + testing_window.SCORE_BOARD_HEIGHT,
