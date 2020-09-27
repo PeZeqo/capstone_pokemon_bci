@@ -57,7 +57,7 @@ class Record():
         # record parameters
         record_name = 'your record name'
         record_description = 'your description for record'
-        record_length_s = 15
+        record_length_s = 3
 
         # export parameters
         dir_path = os.path.dirname(os.path.realpath(__file__))

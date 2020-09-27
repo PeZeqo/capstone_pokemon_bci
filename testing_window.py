@@ -17,7 +17,7 @@ class testing_window(arcade.Window):
     score_list = []
 
     def __init__(self, width, height, title):
-        super().__init__(width, height, title)
+        super().__init__(width, height, title, resizable=True)
         self.screen_width = width
         self.screen_height = height
         self.set_update_rate(1/FREQUENCY)
@@ -67,7 +67,7 @@ class testing_window(arcade.Window):
         # self.on_draw()
 
     def on_update(self, delta_time):
-        self.on_draw()
+        # self.on_draw()
         self.tick %= FREQUENCY
         self.tick += 1
 

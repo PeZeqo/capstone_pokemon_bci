@@ -3,6 +3,7 @@ import os
 import arcade
 import random
 
+
 class testing_checkerboard_window(testing_window.testing_window):
     background_width = 1600
     background_height = 900
@@ -59,7 +60,7 @@ class testing_checkerboard_window(testing_window.testing_window):
 
     def draw_board(self):
         # Draw background
-        arcade.set_background_color(arcade.color.WHITE)
+        arcade.set_background_color(arcade.color.BLACK)
 
         if self.tick == 1:
             self.selected_quad = (random.randint(0, 3))
