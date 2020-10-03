@@ -7,6 +7,7 @@ from PIL import Image
 from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 import arcade
+import ctypes
 
 # Class for the testing window
 class gaming_window(arcade.Window):
@@ -57,6 +58,10 @@ class gaming_window(arcade.Window):
         # set up PyBoy screen support
         self.bot_sup = self.pyboy.botsupport_manager()
         self.scrn = self.bot_sup.screen()
+
+        # minimize PyBoy window
+        pyboy_handle = ctypes.windll.user32.FindWindowW(None, "PyBoy")
+        ctypes.windll.user32.ShowWindow(pyboy_handle, 6)
 
     def load_checkerboards(self):
         # Set up dir paths
