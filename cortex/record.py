@@ -1,4 +1,3 @@
-from cortex import Cortex
 import time
 import os
 
@@ -61,7 +60,7 @@ class Record():
 
         # export parameters
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        record_export_folder = os.path.join(dir_path, 'recordings')
+        record_export_folder = os.path.join(dir_path, '../recordings')
         record_export_data_types = ['EEG']
         record_export_format = 'CSV'
         record_export_version = 'V2'

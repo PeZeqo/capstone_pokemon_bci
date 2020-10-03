@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/capstone_pokemon_bci.iml" filepath="$PROJECT_DIR$/.idea/capstone_pokemon_bci.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../search/.idea/search.iml" filepath="$PROJECT_DIR$/../search/.idea/search.iml" />
     </modules>
   </component>
 </project>

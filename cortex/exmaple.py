@@ -1,6 +1,6 @@
-from cortex import Cortex
+from cortex.cortex import Cortex
 import json
-from record import Record
+from cortex.record import Record
 
 
 def do_stuff(cortex):
