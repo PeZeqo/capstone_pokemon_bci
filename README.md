@@ -23,7 +23,9 @@ Getting this onto you personal computer can be done by following the instruction
 
 In order to run anything involving PyBoy you'll need SDL2. We'll also need to let your computer know where you have SDL2 if your on Windows, or you can just install the package if you're on a Unix based system.
 
-* PYSDL2_DLL_PATH variable added as env variable (Windows)
+* SDL2 dev lib installed and PYSDL2_DLL_PATH variable added as env variable (Windows)
+  * Install the dev library zip at (https://www.libsdl.org/download-2.0.php)
+  * Extract SDL2 folder somewhere you can navigate to
   * Open Environment Variables Window
   * "New..." System Variable
   * Variable name: "PYSDL2_DLL_PATH"
