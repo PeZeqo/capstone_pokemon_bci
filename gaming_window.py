@@ -1,7 +1,8 @@
 import arcade
 import os
 import random
-from project_constants import FREQUENCY, PATTERN_LENGTH, GAME_SCALE, GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE
+from project_constants import FREQUENCY, PATTERN_LENGTH, OFF_BITS, GAME_SCALE, \
+    GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE, PADDING
 import sdl2
 from PIL import Image
 from pyboy import PyBoy
@@ -25,43 +26,42 @@ class gaming_window(arcade.Window):
     scrn = None
 
     def __init__(self, width, height, title):
+        # scale the game width to make the game screen bigger
         self.game_width = width * GAME_SCALE
         self.game_height = height * GAME_SCALE
-        self.screen_width = self.game_width + CHECKERBOARD_SIZE * 2
-        self.screen_height = self.game_height + CHECKERBOARD_SIZE * 2
+
+        # set total screen size since we also need space to draw checkerboards
+        self.screen_width = self.game_width + CHECKERBOARD_SIZE * 2 + PADDING
+        self.screen_height = self.game_height + CHECKERBOARD_SIZE * 2 + PADDING
+
+        # let Arcade Window run it's setup
         super().__init__(self.screen_width, self.screen_height, title)
+
+        # set frame rate as (1 / desired_frame_rate)
         self.set_update_rate(1/FREQUENCY)
 
     def setup(self):
-        # Set flicker frequencies for each quadrant
-        off_bits = int(PATTERN_LENGTH / 3)
-        sample_list = [1] * (PATTERN_LENGTH - off_bits) + [0] * off_bits
-        for x in range(4):
-            self.flicker_frequency.append(random.sample(sample_list, len(sample_list)))
+        self.setup_checkerboards()
+        self.setup_pyboy()
 
+    def setup_checkerboards(self):
         # load textures
         self.load_checkerboards()
 
-        # set all checkerboards to normal state
-        self.last_state = [0] * 4
-
-        # Prep x,y pairs for where to print icons
-        for x in [128, self.screen_width - 128]:
-            for y in [128, self.screen_height - 128]:
+        # prep x,y pairs for where to print checkerboards
+        for x in [128, self.screen_width / 2, self.screen_width - 128]:
+            for y in [128, self.screen_height / 2, self.screen_height - 128]:
+                if x == self.screen_width / 2 and y == self.screen_height / 2:
+                    continue
                 self.checkerboard_pos_list.append([x, y])
 
-        # load rom through PyBoy
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        rom_dir = os.path.join(dir_path, 'roms')
-        self.pyboy = PyBoy(os.path.join(rom_dir, 'Pokemon.gb'))
+        # set all checkerboards to normal state (as opposed to inverted checkerboard)
+        self.last_state = [0] * len(self.checkerboard_pos_list)
 
-        # set up PyBoy screen support
-        self.bot_sup = self.pyboy.botsupport_manager()
-        self.scrn = self.bot_sup.screen()
-
-        # minimize PyBoy window
-        pyboy_handle = ctypes.windll.user32.FindWindowW(None, "PyBoy")
-        ctypes.windll.user32.ShowWindow(pyboy_handle, 6)
+        # set flicker frequencies for each quadrant
+        non_random_pattern = [1] * (PATTERN_LENGTH - OFF_BITS) + [0] * OFF_BITS
+        for x in range(len(self.checkerboard_pos_list)):
+            self.flicker_frequency.append(random.sample(non_random_pattern, len(non_random_pattern)))
 
     def load_checkerboards(self):
         # Set up dir paths
@@ -77,46 +77,62 @@ class gaming_window(arcade.Window):
                 continue
             self.texture_list.append(arcade.load_texture(os.path.join(checkerboard_dir, icon)))
 
+    def setup_pyboy(self):
+        # load rom through PyBoy
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        rom_dir = os.path.join(dir_path, 'roms')
+        self.pyboy = PyBoy(os.path.join(rom_dir, 'Pokemon.gb'))
+
+        # set up PyBoy screen support
+        self.bot_sup = self.pyboy.botsupport_manager()
+        self.scrn = self.bot_sup.screen()
+
+        # minimize PyBoy window
+        pyboy_handle = ctypes.windll.user32.FindWindowW(None, "PyBoy")
+        ctypes.windll.user32.ShowWindow(pyboy_handle, 6)
+
     def on_update(self, delta_time):
         self.pyboy.tick()
         self.on_draw()
         self.tick += 1
 
+    def on_draw(self):
+        # Start the render process
+        arcade.start_render()
+
+        # Draw game
+        self.draw_game()
+
+        # Draw checkerboards
+        self.draw_checkerboards()
+
+        # Finish the render
+        arcade.finish_render()
+
+    def draw_game(self):
+        screen_colors = self.scrn.screen_ndarray()
+        img = Image.fromarray(screen_colors)
+        texture = arcade.Texture("img", img)
+        arcade.draw_scaled_texture_rectangle(self.width / 2, self.height / 2, texture, GAME_SCALE)
+
     def draw_checkerboards(self):
-        # Load and draw all icons
+        # Load and draw all checkerboards
         for ind, last_state in enumerate(self.last_state):
             freq = self.flicker_frequency[ind]
             pos = self.checkerboard_pos_list[ind]
             scale = 1
             texture = self.texture_list[last_state]
 
-            # if self.tick % freq == 0 and self.tick != 0:
+            # if this is a switch state, change checkerboard state:
             if freq[self.tick % PATTERN_LENGTH]:
                 self.last_state[ind] = not last_state
 
             arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, scale, 0)
 
-    def draw_board(self):
-        screen_colors = self.scrn.screen_ndarray()
-        img = Image.fromarray(screen_colors)
-        texture = arcade.Texture("img", img)
-        arcade.draw_scaled_texture_rectangle(self.width / 2, self.height / 2, texture, GAME_SCALE)
-
-    def on_draw(self):
-        # Start the render process. This must be done before any drawing commands.
-        arcade.start_render()
-
-        # Draw grid
-        self.draw_board()
-        self.draw_checkerboards()
-
-        # Finish the render.
-        # Nothing will be drawn without this.
-        # Must happen after all draw commands
-        arcade.finish_render()
-
     def on_key_press(self, key, key_modifiers):
         actions = []
+
+        # switch statement to create WindowEvents (button commands for PyBoy)
         if (key == arcade.key.UP):
             actions = [WindowEvent.PRESS_ARROW_UP, WindowEvent.RELEASE_ARROW_UP]
         elif (key == arcade.key.DOWN):
@@ -134,6 +150,7 @@ class gaming_window(arcade.Window):
         elif (key == arcade.key.RSHIFT):
             actions = [WindowEvent.PRESS_BUTTON_START, WindowEvent.RELEASE_BUTTON_START]
 
+        # if actions list isn't empty, send commands to pyboy and tick the pyboy window to process each command
         if actions:
             for action in actions:
                 self.pyboy.send_input(WindowEvent(action))
