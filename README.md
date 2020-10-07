@@ -9,7 +9,7 @@ You should clone the master branch to your personal computer. Get a fresh instal
 ### Prerequisites
 
 * Python 3.8
-* 'python' command in terminal/cmd mapped to Python 3.8 exe
+* 'python' command in terminal/cmd mapped to installed Python 3.8
 * SDL2 (more info in setup)
 
 ### Setting Up
@@ -41,7 +41,7 @@ In order to run anything involving PyBoy you'll need SDL2. We'll also need to le
 Please first ensure that you have all required libraries installed for Python. This can be done by running the following in cmd/terminal: 
 * python -m pip install -r Requirement.txt
 
-We currently only have a testing window coded, but that can be run through the launch scripts.
+We currently only have a testing window coded, but that can be run through the launch scripts. (OUTDATED currently)
 
 * Launch.sh  for Unix
 * Launch.bat for Windows
