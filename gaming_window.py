@@ -59,9 +59,9 @@ class gaming_window(arcade.Window):
         self.last_state = [0] * len(self.checkerboard_pos_list)
 
         # set flicker frequencies for each quadrant
-        non_random_pattern = [1] * (PATTERN_LENGTH - OFF_BITS) + [0] * OFF_BITS
-        for x in range(len(self.checkerboard_pos_list)):
-            self.flicker_frequency.append(random.sample(non_random_pattern, len(non_random_pattern)))
+        with open('flicker_patterns.txt') as f:
+            for sequence in f:
+                self.flicker_frequency.append(eval(sequence))
 
     def load_checkerboards(self):
         # Set up dir paths
