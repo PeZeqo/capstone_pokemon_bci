@@ -2,7 +2,7 @@ import arcade
 import os
 import random
 from project_constants import FREQUENCY, PATTERN_LENGTH, OFF_BITS, GAME_SCALE, \
-    GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE, PADDING
+    GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE, PADDING, BASE_HEIGHT, BASE_WIDTH
 import sdl2
 from PIL import Image
 from pyboy import PyBoy
@@ -24,18 +24,23 @@ class gaming_window(arcade.Window):
     pyboy = None
     bot_sup = None
     scrn = None
+    draw_scale = None
+    checkerboard_size = CHECKERBOARD_SIZE
+    padding = PADDING
 
     def __init__(self, width, height, title):
         # scale the game width to make the game screen bigger
-        self.game_width = width * GAME_SCALE
-        self.game_height = height * GAME_SCALE
+        self.game_width = GAME_WIDTH * GAME_SCALE
+        self.game_height = GAME_HEIGHT * GAME_SCALE
 
         # set total screen size since we also need space to draw checkerboards
         self.screen_width = self.game_width + CHECKERBOARD_SIZE * 2 + PADDING
         self.screen_height = self.game_height + CHECKERBOARD_SIZE * 2 + PADDING
 
+        self.draw_scale = self.screen_height / BASE_HEIGHT
+
         # let Arcade Window run it's setup
-        super().__init__(self.screen_width, self.screen_height, title)
+        super().__init__(self.screen_width, self.screen_height, title, resizable=True)
 
         # set frame rate as (1 / desired_frame_rate)
         self.set_update_rate(1/FREQUENCY)
@@ -48,12 +53,9 @@ class gaming_window(arcade.Window):
         # load textures
         self.load_checkerboards()
 
-        # prep x,y pairs for where to print checkerboards
-        for x in [128, self.screen_width / 2, self.screen_width - 128]:
-            for y in [128, self.screen_height / 2, self.screen_height - 128]:
-                if x == self.screen_width / 2 and y == self.screen_height / 2:
-                    continue
-                self.checkerboard_pos_list.append([x, y])
+        self.resize_drawing_vars()
+
+        self.set_checkerboard_positions()
 
         # set all checkerboards to normal state (as opposed to inverted checkerboard)
         self.last_state = [0] * len(self.checkerboard_pos_list)
@@ -62,6 +64,25 @@ class gaming_window(arcade.Window):
         with open('flicker_patterns.txt') as f:
             for sequence in f:
                 self.flicker_frequency.append(eval(sequence))
+
+    def set_checkerboard_positions(self):
+        # set some useful vars
+        half_width = self.screen_width / 2
+        half_height = self.screen_height / 2
+        half_checkerboard = self.checkerboard_size / 2
+        width_offset = (self.game_width / 2) + half_checkerboard + self.padding
+        height_offset = (self.game_height / 2) + half_checkerboard + self.padding
+
+        # empty checkerboard pos list
+        self.checkerboard_pos_list = []
+
+        # prep x,y pairs for where to print checkerboards
+        for x in [half_width - width_offset, half_width, half_width + width_offset]:
+            for y in [half_height - height_offset, half_height, half_height + height_offset]:
+                # skip drawing in the middle of board
+                if x == half_width and y == half_height:
+                    continue
+                self.checkerboard_pos_list.append([x, y])
 
     def load_checkerboards(self):
         # Set up dir paths
@@ -96,6 +117,30 @@ class gaming_window(arcade.Window):
         self.on_draw()
         self.tick += 1
 
+    def resize_drawing_vars(self):
+        if self.screen_height <= self.screen_width:
+            self.draw_scale = self.screen_height / BASE_HEIGHT
+        else:
+            self.draw_scale = self.screen_width / BASE_WIDTH
+        self.checkerboard_size = CHECKERBOARD_SIZE * self.draw_scale
+        self.game_width = GAME_WIDTH * GAME_SCALE * self.draw_scale
+        self.game_height = GAME_HEIGHT * GAME_SCALE * self.draw_scale
+        self.padding = PADDING * self.draw_scale
+
+    def on_resize(self, width, height):
+        """ This method is automatically called when the window is resized. """
+
+        # Call the parent. Failing to do this will mess up the coordinates, and default to 0,0 at the center and the
+        # edges being -1 to 1.
+        super().on_resize(width, height)
+
+        self.screen_width = width
+        self.screen_height = height
+
+        self.resize_drawing_vars()
+
+        self.set_checkerboard_positions()
+
     def on_draw(self):
         # Start the render process
         arcade.start_render()
@@ -113,7 +158,7 @@ class gaming_window(arcade.Window):
         screen_colors = self.scrn.screen_ndarray()
         img = Image.fromarray(screen_colors)
         texture = arcade.Texture("img", img)
-        arcade.draw_scaled_texture_rectangle(self.width / 2, self.height / 2, texture, GAME_SCALE)
+        arcade.draw_scaled_texture_rectangle(self.width / 2, self.height / 2, texture, GAME_SCALE * self.draw_scale)
 
     def draw_checkerboards(self):
         # Load and draw all checkerboards
@@ -127,7 +172,7 @@ class gaming_window(arcade.Window):
             if freq[self.tick % PATTERN_LENGTH]:
                 self.last_state[ind] = not last_state
 
-            arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, scale, 0)
+            arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, self.draw_scale, 0)
 
     def on_key_press(self, key, key_modifiers):
         actions = []
