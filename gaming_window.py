@@ -202,7 +202,7 @@ class gaming_window(arcade.Window):
                 self.pyboy.tick()
 
     def main():
-        game = gaming_window(GAME_WIDTH, GAME_HEIGHT, "Game Window")
+        game = gaming_window(0, 0, "Game Window")
         game.setup()
         arcade.run()
 
