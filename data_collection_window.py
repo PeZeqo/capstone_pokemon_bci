@@ -4,6 +4,8 @@ from project_constants import FREQUENCY, PATTERN_LENGTH, PADDING, BASE_HEIGHT, B
 import arcade
 import winsound
 from cortex.cortex import Cortex
+import pandas as pd
+import numpy as np
 
 # Class for the testing window
 class data_collection_window(arcade.Window):
@@ -38,6 +40,7 @@ class data_collection_window(arcade.Window):
     generator = None
     recording_data = []
     cortex = None
+    data_columns = ["P7", "O1", "O2", "P8", "TIME"]
 
     def __init__(self, width, height, title):
         # set total screen size since we also need space to draw checkerboards
@@ -55,12 +58,13 @@ class data_collection_window(arcade.Window):
     def setup(self):
         self.setup_checkerboards()
         self.load_arrows()
-        #self.setup_cortex()
+        self.setup_cortex()
 
     def setup_cortex(self):
         self.cortex = Cortex(None)
         self.cortex.do_prepare_steps()
         self.generator = self.cortex.sub_request(['eeg'])
+        self.recording_data = pd.DataFrame(columns=self.data_columns)
 
     def setup_checkerboards(self):
         # load textures
@@ -124,7 +128,8 @@ class data_collection_window(arcade.Window):
             self.arrow_textures.append(arcade.load_texture(os.path.join(arrow_dir, icon)))
 
     def on_update(self, delta_time):
-        self.on_draw()
+        # self.on_draw()
+        self.exhaust()
         self.tick += 1
         if not self.wait_on_user:
             self.handle_recording()
@@ -133,41 +138,45 @@ class data_collection_window(arcade.Window):
         winsound.Beep(self.beep_frequency, self.beep_duration)
 
     def add_recording(self):
-        eeg_vals = [val for val in self.generator[-128:]]
-        self.recording_data.append(eeg_vals)
+        to_append = np.asarray(list(next(self.generator).queue))
+        a_series = pd.DataFrame(to_append, columns=self.recording_data.columns)
+        self.recording_data = self.recording_data.append(a_series, ignore_index=True)
 
-    def finish_recording(self):
-        "recordings\\"
-        #export data
+    def exhaust(self):
+        next(self.generator)
 
+    def export_recording(self):
+        self.recording_data.to_csv('recordings\\checkerboard_recording_sultan_{}.csv'.format(self.selected_arrow))
+        self.recording_data.drop(self.recording_data.index, inplace=True)
 
     def exit_window(self):
         exit()
 
     def handle_recording(self):
-        # finished all recordings for this icon
-        if self.recordings_done == RECORDINGS_PER_ICON:
-            self.currently_recording = False
-            self.tick = 0
-            self.wait_on_user = True
-            self.selected_arrow += 1
-
-            # went through all arrows, means we recorded all checkerboards
-            if self.selected_arrow == len(self.arrow_textures):
-                self.finish_recording()
-
         # if not on pause and the allotted pause time has passed, start recording again
-        elif not self.currently_recording and self.tick == self.pause_ticks:
+        if not self.currently_recording and self.tick == self.pause_ticks:
             self.currently_recording = True
             self.tick = 0
             self.beep()
 
-        # if recording and the alloted recording time has passed, start pause again
+        # if recording and the allotted recording time has passed, start pause again
         elif self.currently_recording and self.tick == self.record_ticks:
+            self.add_recording()
             self.currently_recording = False
             self.recordings_done += 1
             self.tick = 0
             self.beep()
+
+            # finished all recordings for this icon
+            if self.recordings_done == RECORDINGS_PER_ICON:
+                self.recordings_done = 0
+                self.export_recording()
+                self.wait_on_user = True
+                self.selected_arrow += 1
+
+                # went through all arrows, means we recorded all checkerboards
+                if self.selected_arrow == len(self.arrow_textures):
+                    self.exit_window()
 
     def resize_drawing_vars(self):
         if self.screen_height <= self.screen_width:

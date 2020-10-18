@@ -1,13 +1,10 @@
-import ast
-
 import websocket #'pip install websocket-client' for install
 from datetime import datetime
 import json
 import ssl
 import time
 import sys
-import os
-from queue import Queue
+
 
 # define request id
 QUERY_HEADSET_ID                    =   1
@@ -35,9 +32,6 @@ class Cortex:
         url = "wss://localhost:6868"
         self.ws = websocket.create_connection(url,
                                             sslopt={"cert_reqs": ssl.CERT_NONE})
-        if user is None:
-            dir_path = os.path.dirname(os.path.realpath(__file__))
-            user = json.load(open(os.path.join(dir_path, "cred.json")))
         self.user = user
         self.debug = debug_mode
 
@@ -246,39 +240,26 @@ class Cortex:
     def sub_request(self, stream):
         print('subscribe request --------------------------------')
         sub_request_json = {
-            "jsonrpc": "2.0",
-            "method": "subscribe",
-            "params": {
+            "jsonrpc": "2.0", 
+            "method": "subscribe", 
+            "params": { 
                 "cortexToken": self.auth,
                 "session": self.session_id,
                 "streams": stream
-            },
+            }, 
             "id": SUB_REQUEST_ID
         }
 
         self.ws.send(json.dumps(sub_request_json))
-
+        
         if 'sys' in stream:
             new_data = self.ws.recv()
             print(json.dumps(new_data, indent=4))
             print('\n')
         else:
-            # init a queue of max size 128
-            data_queue = Queue(maxsize=128)
             while True:
-                new_data = self.ws.recv()
-                data = ast.literal_eval(new_data)
-                eeg = data.get('eeg')
-                time = data.get('time')
-                if eeg is not None:
-                    sig_data = list(eeg[7:11])
-                    sig_data.append(time)
-                    # if queue full, pop front item
-                    if data_queue.full():
-                        data_queue.get()
-                    # add new data to end of queue
-                    data_queue.put(sig_data)
-                    yield data_queue  # This is the data that is being streamed
+                new_data = self.ws.recv()        
+                print(new_data)
 
 
     def query_profile(self):
