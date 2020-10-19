@@ -9,7 +9,8 @@ You should clone the master branch to your personal computer. Get a fresh instal
 ### Prerequisites
 
 * Python 3.8
-* 'python' command in terminal/cmd mapped to Python 3.8 exe
+* 'python' command in terminal/cmd mapped to installed Python 3.8
+* SDL2 (more info in setup)
 
 ### Setting Up
 
@@ -20,13 +21,27 @@ Getting this onto you personal computer can be done by following the instruction
   * Move to directory you want the folder to live in
   * run "git clone https://github.com/PeZeqo/capstone_pokemon_bci.git"
 
+In order to run anything involving PyBoy you'll need SDL2. We'll also need to let your computer know where you have SDL2 if your on Windows, or you can just install the package if you're on a Unix based system.
+
+* SDL2 dev lib installed and PYSDL2_DLL_PATH variable added as env variable (Windows)
+  * Install the dev library zip at (https://www.libsdl.org/download-2.0.php)
+  * Extract SDL2 folder somewhere you can navigate to
+  * Open Environment Variables Window
+  * "New..." System Variable
+  * Variable name: "PYSDL2_DLL_PATH"
+  * Variable value: "path_to_sdl_dir\lib\x64"
+* SDL2 installed through package manager (Unix)
+  * Ubuntu: sudo apt install libsdl2-dev
+  * Fedora: sudo dnf install SDL2-devel
+  * macOS: brew install sdl2
+
 
 ### Running
 
 Please first ensure that you have all required libraries installed for Python. This can be done by running the following in cmd/terminal: 
 * python -m pip install -r Requirement.txt
 
-We currently only have a testing window coded, but that can be run through the launch scripts.
+We currently only have a testing window coded, but that can be run through the launch scripts. (OUTDATED currently)
 
 * Launch.sh  for Unix
 * Launch.bat for Windows

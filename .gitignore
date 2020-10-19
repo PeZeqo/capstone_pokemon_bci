@@ -130,3 +130,12 @@ dmypy.json
 
 # Idea folder
 .idea/
+
+# Cache folder
+__pycache__/
+
+# Notebook checkpoints folder
+.ipynb_checkpoints/
+
+# Python capstone environment
+capstone-env/

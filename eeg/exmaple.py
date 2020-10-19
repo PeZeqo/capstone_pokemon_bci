@@ -1,6 +1,6 @@
-from cortex import Cortex
+from eeg.cortex import Cortex
 import json
-from record import Record
+from eeg.record import Record
 
 
 def do_stuff(cortex):
