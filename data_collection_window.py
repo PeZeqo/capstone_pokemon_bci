@@ -1,6 +1,6 @@
 import os
-from project_constants import FREQUENCY, PATTERN_LENGTH, PADDING, BASE_HEIGHT, BASE_WIDTH, ARROW_SIZE, \
-    ARROW_SCALE, CHECKERBOARD_SIZE, RECORDINGS_PER_ICON, SECONDS_PER_RECORDING, PAUSE_TO_RECORD_RATIO
+from project_constants import FREQUENCY, PATTERN_LENGTH, PADDING, BASE_HEIGHT, BASE_WIDTH, ARROW_SIZE, ARROW_SCALE, \
+    CHECKERBOARD_SIZE, RECORDINGS_PER_ICON, SECONDS_PER_RECORDING, PAUSE_TO_RECORD_RATIO, COMMAND_SEND_FREQUENCY
 import arcade
 import winsound
 from cortex.cortex import Cortex
@@ -134,23 +134,26 @@ class data_collection_window(arcade.Window):
         if not self.wait_on_user:
             self.handle_recording()
 
+        # if self.tick % COMMAND_SEND_FREQUENCY == 0:
+        #     self.create_command_task()
+
+    def create_command_task(self):
+        pass
+
     def beep(self):
         winsound.Beep(self.beep_frequency, self.beep_duration)
+
+    def exhaust(self):
+        next(self.generator)
 
     def add_recording(self):
         to_append = np.asarray(list(next(self.generator).queue))
         a_series = pd.DataFrame(to_append, columns=self.recording_data.columns)
         self.recording_data = self.recording_data.append(a_series, ignore_index=True)
 
-    def exhaust(self):
-        next(self.generator)
-
     def export_recording(self):
         self.recording_data.to_csv('recordings\\checkerboard_recording_sultan_{}.csv'.format(self.selected_arrow))
         self.recording_data.drop(self.recording_data.index, inplace=True)
-
-    def exit_window(self):
-        exit()
 
     def handle_recording(self):
         # if not on pause and the allotted pause time has passed, start recording again
@@ -237,7 +240,7 @@ class data_collection_window(arcade.Window):
             texture = self.texture_list[last_state]
 
             # if this is a switch state, change checkerboard state:
-            if freq[self.tick % PATTERN_LENGTH]:
+            if freq[self.tick % len(freq)]:
                 self.last_state[ind] = not last_state
 
             arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, self.draw_scale, 0)
@@ -248,6 +251,9 @@ class data_collection_window(arcade.Window):
             self.wait_on_user = False
             self.currently_recording = False
             self.tick = 0
+
+    def exit_window(self):
+        exit()
 
     def main():
         window = data_collection_window(0, 0, "Data Collection Window")

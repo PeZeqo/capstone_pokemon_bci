@@ -12,21 +12,27 @@ import ctypes
 
 # Class for the testing window
 class gaming_window(arcade.Window):
+
+    # screen and image size vars
     screen_width = None
     screen_height = None
     game_width = None
     game_height = None
+    checkerboard_size = CHECKERBOARD_SIZE
+    padding = PADDING
+
+    # textures and frequencies vars
     texture_list = []
     flicker_frequency = []
     tick = 0
     last_state = []
     checkerboard_pos_list = []
+    draw_scale = None
+
+    # PyBoy vars
     pyboy = None
     bot_sup = None
     scrn = None
-    draw_scale = None
-    checkerboard_size = CHECKERBOARD_SIZE
-    padding = PADDING
 
     def __init__(self, width, height, title):
         # scale the game width to make the game screen bigger
@@ -165,11 +171,10 @@ class gaming_window(arcade.Window):
         for ind, last_state in enumerate(self.last_state):
             freq = self.flicker_frequency[ind]
             pos = self.checkerboard_pos_list[ind]
-            scale = 1
             texture = self.texture_list[last_state]
 
             # if this is a switch state, change checkerboard state:
-            if freq[self.tick % PATTERN_LENGTH]:
+            if freq[self.tick % len(freq)]:
                 self.last_state[ind] = not last_state
 
             arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, self.draw_scale, 0)
