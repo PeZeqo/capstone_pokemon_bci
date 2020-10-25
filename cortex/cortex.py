@@ -8,6 +8,7 @@ import time
 import sys
 import os
 from queue import Queue
+from project_constants import SECONDS_PER_RECORDING
 
 # define request id
 QUERY_HEADSET_ID                    =   1
@@ -263,8 +264,8 @@ class Cortex:
             print(json.dumps(new_data, indent=4))
             print('\n')
         else:
-            # init a queue of max size 128
-            data_queue = Queue(maxsize=128)
+            # init a queue of max size 128 * seconds in each recording
+            data_queue = Queue(maxsize=128 * SECONDS_PER_RECORDING)
             while True:
                 new_data = self.ws.recv()
                 data = ast.literal_eval(new_data)

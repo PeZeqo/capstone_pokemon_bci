@@ -9,6 +9,7 @@ from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 import arcade
 import ctypes
+from command_handler import command_handler
 
 # Class for the testing window
 class gaming_window(arcade.Window):
@@ -122,6 +123,9 @@ class gaming_window(arcade.Window):
         self.pyboy.tick()
         self.on_draw()
         self.tick += 1
+        self.tick %= FREQUENCY
+        if self.tick == 0:
+            command_handler([])
 
     def resize_drawing_vars(self):
         if self.screen_height <= self.screen_width:
@@ -181,6 +185,7 @@ class gaming_window(arcade.Window):
 
     def on_key_press(self, key, key_modifiers):
         actions = []
+        print("KEY PRESSED: {}".format(key))
 
         # switch statement to create WindowEvents (button commands for PyBoy)
         if (key == arcade.key.UP):
