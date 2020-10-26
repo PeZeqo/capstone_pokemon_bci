@@ -9,24 +9,31 @@ from pyboy import PyBoy
 from pyboy.utils import WindowEvent
 import arcade
 import ctypes
+from command_handler import command_handler
 
 # Class for the testing window
 class gaming_window(arcade.Window):
+
+    # screen and image size vars
     screen_width = None
     screen_height = None
     game_width = None
     game_height = None
+    checkerboard_size = CHECKERBOARD_SIZE
+    padding = PADDING
+
+    # textures and frequencies vars
     texture_list = []
     flicker_frequency = []
     tick = 0
     last_state = []
     checkerboard_pos_list = []
+    draw_scale = None
+
+    # PyBoy vars
     pyboy = None
     bot_sup = None
     scrn = None
-    draw_scale = None
-    checkerboard_size = CHECKERBOARD_SIZE
-    padding = PADDING
 
     def __init__(self, width, height, title):
         # scale the game width to make the game screen bigger
@@ -116,6 +123,9 @@ class gaming_window(arcade.Window):
         self.pyboy.tick()
         self.on_draw()
         self.tick += 1
+        self.tick %= FREQUENCY
+        if self.tick == 0:
+            command_handler([])
 
     def resize_drawing_vars(self):
         if self.screen_height <= self.screen_width:
@@ -165,17 +175,17 @@ class gaming_window(arcade.Window):
         for ind, last_state in enumerate(self.last_state):
             freq = self.flicker_frequency[ind]
             pos = self.checkerboard_pos_list[ind]
-            scale = 1
             texture = self.texture_list[last_state]
 
             # if this is a switch state, change checkerboard state:
-            if freq[self.tick % PATTERN_LENGTH]:
+            if freq[self.tick % len(freq)]:
                 self.last_state[ind] = not last_state
 
             arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, self.draw_scale, 0)
 
     def on_key_press(self, key, key_modifiers):
         actions = []
+        print("KEY PRESSED: {}".format(key))
 
         # switch statement to create WindowEvents (button commands for PyBoy)
         if (key == arcade.key.UP):
@@ -202,7 +212,7 @@ class gaming_window(arcade.Window):
                 self.pyboy.tick()
 
     def main():
-        game = gaming_window(GAME_WIDTH, GAME_HEIGHT, "Game Window")
+        game = gaming_window(0, 0, "Game Window")
         game.setup()
         arcade.run()
 
