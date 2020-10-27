@@ -2,7 +2,7 @@ import arcade
 import os
 import random
 from project_constants import FREQUENCY, PATTERN_LENGTH, OFF_BITS, GAME_SCALE, \
-    GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE, PADDING, BASE_HEIGHT, BASE_WIDTH, COMMAND_SEND_FREQUENCY, ML_MODEL_PATH
+    GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE, PADDING, BASE_HEIGHT, BASE_WIDTH, COMMAND_SEND_FREQUENCY
 import sdl2
 from PIL import Image
 from pyboy import PyBoy
@@ -15,6 +15,7 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 from cortex.cortex import Cortex
+import time
 
 # Class for the testing window
 class gaming_window(arcade.Window):
@@ -46,6 +47,8 @@ class gaming_window(arcade.Window):
 
     # ML vars
     ml_model = None
+    json_model = None
+    command_handler = None
 
     def __init__(self, width, height, title):
         # scale the game width to make the game screen bigger
@@ -77,10 +80,40 @@ class gaming_window(arcade.Window):
         self.print_stage("ML MODEL SETUP")
         self.setup_model()
         self.print_stage("CORTEX SETUP")
-        self.setup_cortex()
+        # self.setup_cortex()
 
     def setup_model(self):
-        self.ml_model = tf.keras.models.load_model(ML_MODEL_PATH)
+        # self.load_model()
+        self.command_handler = command_handler()
+        # self.multi_model_load()
+        # self.multi_model_copy()
+        # tf.keras.backend.clear_session()
+        # self.ml_model = tf.keras.models.load_model(ML_MODEL_PATH, compile=False)
+
+    def multi_model_load(self):
+        for i in range(5):
+            print("LOAD MODEL: {}".format(i))
+            start = time.time()
+            self.load_model()
+            print("Model: {} toook: {}s".format(i, time.time()-start))
+
+    def multi_model_copy(self):
+        for i in range(5):
+            print("COPY MODEL: {}".format(i))
+            start = time.time()
+            model = self.copy_model()
+            print("Model: {} toook: {}s".format(i, time.time()-start))
+
+    def load_model(self):
+        if self.json_model is None:
+            with open("models\model.json", 'r') as json_file:
+                self.json_model = json_file.read()
+        self.ml_model = tf.keras.models.model_from_json(self.json_model)
+        self.ml_model.load_weights("models\model.h5")
+        # self.ml_model._make_predict_function()
+
+    def copy_model(self):
+        return tf.keras.models.clone_model(self.ml_model)
 
     def setup_cortex(self):
         self.cortex = Cortex(None)
@@ -152,22 +185,23 @@ class gaming_window(arcade.Window):
 
     def on_update(self, delta_time):
         self.pyboy.tick()
-        # self.on_draw()
+        self.on_draw()
+        # self.exhaust()
         self.tick += 1
         self.tick %= FREQUENCY
         if self.tick % COMMAND_SEND_FREQUENCY == 0:
-            data = self.get_eeg_data()
-            print(data)
-            print(len(data))
-            print("THREAD TIME")
-            command_handler(data, self.ml_model)
-        else:
-            self.exhaust()
+            "Starting guess"
+            start = time.time()
+            self.command_handler.predict(self.get_eeg_data())
+            print("Guess done in: {}s".format(time.time() - start))
+            # command_handler(self.get_eeg_data(), self.ml_model)
+            pass
 
     def exhaust(self):
         next(self.generator)
 
     def get_eeg_data(self):
+        return np.ones((128, 5))
         return np.asarray(list(next(self.generator).queue))
 
     def resize_drawing_vars(self):

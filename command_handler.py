@@ -1,53 +1,45 @@
-from threading import Thread
 from pynput.keyboard import Key, Controller
 import pywt
 import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import minmax_scale
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+import tensorflow as tf
 
-class command_handler(Thread):
-    eeg_data = None
-    eeg_df = None
+class command_handler():
     ml_model = None
+    pca = None
     keyboard = Controller()
 
-    def __init__(self, eeg_data, ml_model):
-        Thread.__init__(self)
-        self.eeg_data = eeg_data
-        self.ml_model = ml_model
-        print(self.ml_model)
-        self.daemon = True
-        self.start()
+    def __init__(self):
+        self.load_model_from_json()
+        self.ml_model.predict(np.ones((1,12,128)))
+        self.pca = PCA(0.8)
 
-    def filter_data(self):
-        print('to_df')
-        self.convert_to_df()
-        print(self.eeg_df.head())
-        print('decomp')
-        approx, decomp = self.wavelet_dwt()
-        print('pca')
+    def load_model_from_json(self):
+        with open("models\model.json", 'r') as json_file:
+            json_model = json_file.read()
+        self.ml_model = tf.keras.models.model_from_json(json_model)
+        self.ml_model.load_weights("models\model.h5")
+
+    def filter_data(self, eeg_data):
+        eeg_data = eeg_data[:,:-1]
+        approx, decomp = self.wavelet_dwt(eeg_data)
         pca_approx = self.pca_and_inverse(approx)
         pca_decomp = self.pca_and_inverse(decomp)
-        print('sum')
         total_data = np.concatenate((pca_approx, pca_decomp), axis=1)
         data = self.scale_and_normalize(total_data)
         return self.reformat_data(data)
 
-    def convert_to_df(self):
-        cols = ['P7', 'O1', 'O2', 'P8', 'Time']
-        self.eeg_df = pd.DataFrame(self.eeg_data, columns=cols)
-        keep_cols = ['P7', 'O1', 'O2', 'P8']
-        self.eeg_df = self.eeg_df[keep_cols]
-
-    def wavelet_dwt(self):
-        return pywt.dwt(self.eeg_df.values, 'db5')
+    def wavelet_dwt(self, eeg_data):
+        return pywt.dwt(eeg_data, 'db5')
 
     def pca_and_inverse(self, data):
-        pca = PCA(0.90)
-        pca.fit(data)
-        components = pca.transform(data)
-        return pca.inverse_transform(components)
+        self.pca.fit(data)
+        components = self.pca.transform(data)
+        return self.pca.inverse_transform(components)
 
     def scale_and_normalize(self, data):
         for col in range(data.shape[1]):
@@ -60,18 +52,9 @@ class command_handler(Thread):
         return data
 
     def predict_command(self, data):
-        print(self.ml_model)
-        print(data.shape)
-        try:
-            pred = self.ml_model.predict(data)
-            print(pred)
-            command = np.argmax(pred)
-            print(command)
-            print("NO ERROR")
-            return command
-        except:
-            print("HELLA STINKY")
-        return 0
+        pred = self.ml_model.predict(data)
+        command = np.argmax(pred)
+        return command
 
     def press_release(self, key):
         self.keyboard.press(key)
@@ -98,18 +81,13 @@ class command_handler(Thread):
         elif command == 8:
             self.press_release(Key.shift_r)
 
-    def run(self):
-        print("Starting thread")
-
+    def predict(self, eeg_data):
+        # filter data
         print("Filter Data")
-        data = self.filter_data()
-
+        data = self.filter_data(eeg_data)
+        # make command prediction
         print("Make Prediction")
         command = self.predict_command(data)
-
-        print("PRESSING: {}".format(command))
+        # map command to a keyboard action
+        print("Predicted Command: {}".format(command))
         self.command_to_keyboard_action(command)
-
-        print("Ending thread")
-
-
