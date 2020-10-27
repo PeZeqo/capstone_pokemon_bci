@@ -69,7 +69,7 @@ class command_predict_thread(Thread):
         return data
 
     def load_model_from_json(self):
-        with open("models\model.json", 'r') as json_file:
+        with open("../models/model.json", 'r') as json_file:
             json_model = json_file.read()
         model = tf.keras.models.model_from_json(json_model)
         model.load_weights("models\model.h5")

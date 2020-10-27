@@ -42,7 +42,7 @@ class testing_window(arcade.Window):
     def load_icons(self):
         # Set up dir paths
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        image_dir = os.path.join(dir_path, 'images')
+        image_dir = os.path.join(dir_path, '../images')
         icon_dir = os.path.join(image_dir, 'icons')
         icon_list = os.listdir(icon_dir)
 

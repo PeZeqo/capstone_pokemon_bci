@@ -10,8 +10,6 @@ from pyboy.utils import WindowEvent
 import arcade
 import ctypes
 from command_handler import command_handler
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 from cortex.cortex import Cortex
@@ -46,8 +44,6 @@ class gaming_window(arcade.Window):
     cortex = None
 
     # ML vars
-    ml_model = None
-    json_model = None
     command_handler = None
 
     def __init__(self, width, height, title):
@@ -77,43 +73,13 @@ class gaming_window(arcade.Window):
         self.setup_checkerboards()
         self.print_stage("PYBOY SETUP")
         self.setup_pyboy()
-        self.print_stage("ML MODEL SETUP")
-        self.setup_model()
+        self.print_stage("COMMAND HANDLER SETUP")
+        self.setup_command_handler()
         self.print_stage("CORTEX SETUP")
         # self.setup_cortex()
 
-    def setup_model(self):
-        # self.load_model()
+    def setup_command_handler(self):
         self.command_handler = command_handler()
-        # self.multi_model_load()
-        # self.multi_model_copy()
-        # tf.keras.backend.clear_session()
-        # self.ml_model = tf.keras.models.load_model(ML_MODEL_PATH, compile=False)
-
-    def multi_model_load(self):
-        for i in range(5):
-            print("LOAD MODEL: {}".format(i))
-            start = time.time()
-            self.load_model()
-            print("Model: {} toook: {}s".format(i, time.time()-start))
-
-    def multi_model_copy(self):
-        for i in range(5):
-            print("COPY MODEL: {}".format(i))
-            start = time.time()
-            model = self.copy_model()
-            print("Model: {} toook: {}s".format(i, time.time()-start))
-
-    def load_model(self):
-        if self.json_model is None:
-            with open("models\model.json", 'r') as json_file:
-                self.json_model = json_file.read()
-        self.ml_model = tf.keras.models.model_from_json(self.json_model)
-        self.ml_model.load_weights("models\model.h5")
-        # self.ml_model._make_predict_function()
-
-    def copy_model(self):
-        return tf.keras.models.clone_model(self.ml_model)
 
     def setup_cortex(self):
         self.cortex = Cortex(None)
@@ -194,8 +160,6 @@ class gaming_window(arcade.Window):
             start = time.time()
             self.command_handler.predict(self.get_eeg_data())
             print("Guess done in: {}s".format(time.time() - start))
-            # command_handler(self.get_eeg_data(), self.ml_model)
-            pass
 
     def exhaust(self):
         next(self.generator)
