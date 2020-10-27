@@ -152,12 +152,17 @@ class gaming_window(arcade.Window):
 
     def on_update(self, delta_time):
         self.pyboy.tick()
-        self.on_draw()
-        self.exhaust()
+        # self.on_draw()
         self.tick += 1
         self.tick %= FREQUENCY
         if self.tick % COMMAND_SEND_FREQUENCY == 0:
-            command_handler(self.get_eeg_data(), self.ml_model)
+            data = self.get_eeg_data()
+            print(data)
+            print(len(data))
+            print("THREAD TIME")
+            command_handler(data, self.ml_model)
+        else:
+            self.exhaust()
 
     def exhaust(self):
         next(self.generator)
