@@ -7,6 +7,7 @@ from sklearn.preprocessing import minmax_scale
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
+from joblib import load
 
 class command_handler():
     ml_model = None
@@ -16,7 +17,7 @@ class command_handler():
     def __init__(self):
         self.load_model_from_json()
         self.ml_model.predict(np.ones((1,12,128)))
-        self.pca = PCA(0.8)
+        self.pca = load('models\pca')
 
     def load_model_from_json(self):
         with open("models\model.json", 'r') as json_file:
@@ -26,6 +27,7 @@ class command_handler():
 
     def filter_data(self, eeg_data):
         eeg_data = eeg_data[:,:-1]
+        print(eeg_data[:5,:])
         approx, decomp = self.wavelet_dwt(eeg_data)
         pca_approx = self.pca_and_inverse(approx)
         pca_decomp = self.pca_and_inverse(decomp)
@@ -65,11 +67,11 @@ class command_handler():
         if command == 0:
             return
         elif command == 1:
-            self.press_release('z')
+            self.press_release('x')
         elif command == 2:
             self.press_release(Key.up)
         elif command == 3:
-            self.press_release('x')
+            self.press_release('z')
         elif command == 4:
             self.press_release(Key.left)
         elif command == 5:

@@ -76,7 +76,7 @@ class gaming_window(arcade.Window):
         self.print_stage("COMMAND HANDLER SETUP")
         self.setup_command_handler()
         self.print_stage("CORTEX SETUP")
-        # self.setup_cortex()
+        self.setup_cortex()
 
     def setup_command_handler(self):
         self.command_handler = command_handler()
@@ -151,8 +151,8 @@ class gaming_window(arcade.Window):
 
     def on_update(self, delta_time):
         self.pyboy.tick()
-        self.on_draw()
-        # self.exhaust()
+        # self.on_draw()
+        self.exhaust()
         self.tick += 1
         self.tick %= FREQUENCY
         if self.tick % COMMAND_SEND_FREQUENCY == 0:
@@ -165,7 +165,7 @@ class gaming_window(arcade.Window):
         next(self.generator)
 
     def get_eeg_data(self):
-        return np.ones((128, 5))
+        # return np.ones((128, 5))
         return np.asarray(list(next(self.generator).queue))
 
     def resize_drawing_vars(self):
@@ -179,8 +179,6 @@ class gaming_window(arcade.Window):
         self.padding = PADDING * self.draw_scale
 
     def on_resize(self, width, height):
-        """ This method is automatically called when the window is resized. """
-
         # Call the parent. Failing to do this will mess up the coordinates, and default to 0,0 at the center and the
         # edges being -1 to 1.
         super().on_resize(width, height)
