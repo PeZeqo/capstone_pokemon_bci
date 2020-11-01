@@ -2,6 +2,7 @@ from threading import Thread
 import random
 from time import sleep
 from pynput.keyboard import Key, Controller
+from cca_train import cca_handler
 
 
 class command_handler(Thread):
