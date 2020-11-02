@@ -8,9 +8,9 @@ class cca_handler():
 		self.num_targets = 8
 		self.sampling_rate = 128.0
 		self.frequencies = [30.0, 20.0, 15.0, 12.0, 8.57, 7.5, 6.67]
-		self.ref_signals_1s = []
-		self.getReferenceSignals1s() 
-		self.prediction = None
+		self.ref_signals_1s = self.getReferenceSignals1s() 
+		self.prediction = None # target 0 to num_targets-1
+		self.input_data_1s = None
 
 	def getReferenceSignals1s(self):
 		for freq in self.frequencies:
@@ -39,7 +39,17 @@ class cca_handler():
 			result[i] = corr
 		return result
 
+	def predict(self, data):
+		# pass in the 1s sample
+		self.input_data_1s = data
+		corrs = [None] * num_targets
+		for i in range(num_targets):
+			corrs[i] = findCorr(self.input_data_1s, ref_signals_1s[i])
+		self.prediction = np.argmax(corrs)
+			
+
 	def getPrediction(self):
+		self.predict()
 		return self.prediction
 
 

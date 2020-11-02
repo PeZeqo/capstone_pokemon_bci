@@ -8,6 +8,7 @@ from cca_train import cca_handler
 class command_handler(Thread):
     eeg_data = None
     keyboard = Controller()
+    my_cca_handler = cca_handler()
 
     def __init__(self, eeg_data):
         Thread.__init__(self)
@@ -16,10 +17,11 @@ class command_handler(Thread):
         self.start()
 
     def filter_data(self):
+        eeg_data = eeg_data[:,:,-1]
         sleep(0.25)
 
     def predict_command(self):
-        return random.randint(0, 8)
+        return my_cca_handler.getPrediction(eeg_data)
 
     def press_release(self, key):
         self.keyboard.press(key)
