@@ -1,4 +1,4 @@
-import testing_window
+from deprecated import testing_window
 import os
 import arcade
 import random
@@ -35,7 +35,7 @@ class testing_checkerboard_window(testing_window.testing_window, arcade.Window):
     def load_checkerboards(self):
         # Set up dir paths
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        image_dir = os.path.join(dir_path, 'images')
+        image_dir = os.path.join(dir_path, '../images')
         checkerboard_dir = os.path.join(image_dir, 'checkerboards')
         icon_list = os.listdir(checkerboard_dir)
 
