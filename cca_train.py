@@ -2,6 +2,7 @@ from pynput.keyboard import Key, Controller
 import pandas as pd
 import numpy as np
 from sklearn.cross_decomposition import CCA
+from joblib import load
 
 class cca_handler():
 
@@ -18,6 +19,7 @@ class cca_handler():
 		self.getReferenceSignals1s()
 
 		self.cca = CCA(n_components=1)
+		self.pca = load('models\pca')
 
 
 	def getReferenceSignals1s(self):
@@ -51,8 +53,14 @@ class cca_handler():
 		return result
 
 	def filter(self, data):
-		# data shape is 128 x 4
-		return data
+		# data shape is 128 x 4 - just channels
+		# do pca fit and inverse
+		self.pca.fit(data)
+		components = self.pca.transform(data)
+		pca_approx = self.pca.inverse_transform(components)
+		# scale, normalize
+		norm = pca_approx / np.linalg.norm(pca_approx)
+		return norm
 
 	def predict(self, data):
 		# pass in the 1s sample
