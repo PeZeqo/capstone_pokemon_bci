@@ -29,7 +29,7 @@ class data_collection_window(arcade.Window):
 
     # recording control vars
     record_ticks = FREQUENCY * SECONDS_PER_RECORDING
-    pause_ticks = record_ticks * PAUSE_TO_RECORD_RATIO
+    pause_ticks = FREQUENCY * PAUSE_TO_RECORD_RATIO
     currently_recording = False
     wait_on_user = True
     recordings_done = 0
@@ -152,7 +152,7 @@ class data_collection_window(arcade.Window):
         self.recording_data = self.recording_data.append(a_series, ignore_index=True)
 
     def export_recording(self):
-        self.recording_data.to_csv('recordings\\checkerboard_recording_sultan_{}.csv'.format(self.selected_arrow))
+        self.recording_data.to_csv('recordings\\checkerboard_recording_peter_{}.csv'.format(self.selected_arrow))
         self.recording_data.drop(self.recording_data.index, inplace=True)
 
     def handle_recording(self):

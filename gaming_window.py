@@ -2,7 +2,7 @@ import arcade
 import os
 import random
 from project_constants import FREQUENCY, PATTERN_LENGTH, OFF_BITS, GAME_SCALE, \
-    GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE, PADDING, BASE_HEIGHT, BASE_WIDTH
+    GAME_HEIGHT, GAME_WIDTH, CHECKERBOARD_SIZE, PADDING, BASE_HEIGHT, BASE_WIDTH, COMMAND_SEND_FREQUENCY
 import sdl2
 from PIL import Image
 from pyboy import PyBoy
@@ -10,6 +10,10 @@ from pyboy.utils import WindowEvent
 import arcade
 import ctypes
 from command_handler import command_handler
+import numpy as np
+import pandas as pd
+from cortex.cortex import Cortex
+import time
 
 # Class for the testing window
 class gaming_window(arcade.Window):
@@ -35,6 +39,13 @@ class gaming_window(arcade.Window):
     bot_sup = None
     scrn = None
 
+    # data collection vars
+    generator = None
+    cortex = None
+
+    # ML vars
+    command_handler = None
+
     def __init__(self, width, height, title):
         # scale the game width to make the game screen bigger
         self.game_width = GAME_WIDTH * GAME_SCALE
@@ -52,9 +63,28 @@ class gaming_window(arcade.Window):
         # set frame rate as (1 / desired_frame_rate)
         self.set_update_rate(1/FREQUENCY)
 
+    def print_stage(self, stage):
+        print('-'*20)
+        print('{} BEGINNING'.format(stage))
+        print('-'*20)
+
     def setup(self):
+        self.print_stage("VISUALS SETUP")
         self.setup_checkerboards()
+        self.print_stage("PYBOY SETUP")
         self.setup_pyboy()
+        self.print_stage("COMMAND HANDLER SETUP")
+        self.setup_command_handler()
+        self.print_stage("CORTEX SETUP")
+        self.setup_cortex()
+
+    def setup_command_handler(self):
+        self.command_handler = command_handler()
+
+    def setup_cortex(self):
+        self.cortex = Cortex(None)
+        self.cortex.do_prepare_steps()
+        self.generator = self.cortex.sub_request(['eeg'])
 
     def setup_checkerboards(self):
         # load textures
@@ -121,11 +151,22 @@ class gaming_window(arcade.Window):
 
     def on_update(self, delta_time):
         self.pyboy.tick()
-        self.on_draw()
+        # self.on_draw()
+        self.exhaust()
         self.tick += 1
         self.tick %= FREQUENCY
-        if self.tick == 0:
-            command_handler([])
+        if self.tick % COMMAND_SEND_FREQUENCY == 0:
+            "Starting guess"
+            start = time.time()
+            self.command_handler.predict(self.get_eeg_data())
+            print("Guess done in: {}s".format(time.time() - start))
+
+    def exhaust(self):
+        next(self.generator)
+
+    def get_eeg_data(self):
+        # return np.ones((128, 5))
+        return np.asarray(list(next(self.generator).queue))
 
     def resize_drawing_vars(self):
         if self.screen_height <= self.screen_width:
@@ -138,8 +179,6 @@ class gaming_window(arcade.Window):
         self.padding = PADDING * self.draw_scale
 
     def on_resize(self, width, height):
-        """ This method is automatically called when the window is resized. """
-
         # Call the parent. Failing to do this will mess up the coordinates, and default to 0,0 at the center and the
         # edges being -1 to 1.
         super().on_resize(width, height)
