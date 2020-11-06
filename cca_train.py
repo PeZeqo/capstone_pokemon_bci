@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn.cross_decomposition import CCA
 from joblib import load
+from matplotlib import pyplot as plt
 
 class cca_handler():
 
@@ -12,14 +13,36 @@ class cca_handler():
 		# self.frequencies = [30.0, 20.0, 15.0, 12.0, 10.0,   8.57, 7.5, 6.67]
 		# frequencies calculated by frames/len(array) as seen in flicker_patterns.txt
 		self.frequencies = [32.0, 21.33, 14.22, 42.67, 16.0, 64.0, 25.6, 18.29]
-		self.prediction = None # target 0 to num_targets-1
+		# prediction should be targets 1 to num_targets, not 0 to num_targets - 1
+		# based on command_to_keyboard action
+		self.prediction = None 
 		self.keyboard = Controller()
 
-		self.ref_signals = []
+		self.ref_signals = [] # list of 4 x 128
 		self.getReferenceSignals1s()
 
 		self.cca = CCA(n_components=1)
 		self.pca = load('models\pca')
+		self.channels = ['P7', 'O1', 'O2', 'P8']
+
+		self.fig = None
+		self.ax = None
+
+		self.start_plot()
+
+	def start_plot(self):
+		self.fig, self.ax = plt.subplots(figsize=(10 ,5))
+		# just use target 0 for this exercise
+		for row in self.ref_signals[0]:
+			self.ax.plot(row, alpha=0.3)
+		self.fig.show()
+		self.fig.canvas.draw()
+
+	def plot_signals(self, data):
+		# plot columns data - data is 128 x 4
+		for col in data.T:
+			self.ax.plot(col)
+		self.fig.canvas.draw()
 
 
 	def getReferenceSignals1s(self):
@@ -48,7 +71,7 @@ class cca_handler():
 			self.cca.fit(input_data, np.squeeze(target_signal[i,:,:]).T)
 			a, b = self.cca.transform(input_data, np.squeeze(target_signal[i,:,:]).T)
 			corr = np.corrcoef(a[:,0], b[:,0])[0, 1]
-			print('correlation target {} = {}'.format(i, corr))
+			# print('correlation target {} = {}'.format(i, corr))
 			result[i] = corr
 		return result
 
@@ -64,12 +87,13 @@ class cca_handler():
 
 	def predict(self, data):
 		# pass in the 1s sample
-		print("Make Prediction")
-		data = self.filter(data)
+		# data = self.filter(data)
 		corrs = self.findCorr(data, self.ref_signals)
 		self.prediction = np.argmax(corrs)
-		print("Predicted Command: {}".format(self.prediction))
-		self.command_to_keyboard_action(self.prediction)
+		print("Predicted Target: {}".format(self.prediction))
+		self.plot_signals(data)
+
+		# self.command_to_keyboard_action(self.prediction + 1)
 
 
 	def press_release(self, key):

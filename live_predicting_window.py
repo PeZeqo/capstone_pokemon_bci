@@ -72,7 +72,7 @@ class live_predicting_window(arcade.Window):
 
 		# set recording name
 		self.recording_name = recording_name
-		# set arrow target - assume target num is in the name
+		# set arrow target - assume target num is in the name - select first number in filename
 		self.target = int(re.findall(r'\d+|$', self.recording_name)[0])
 		print('Choose target {}'.format(self.target))
 
@@ -94,6 +94,7 @@ class live_predicting_window(arcade.Window):
 		self.setup_command_handler()
 
 	def setup_command_handler(self):
+		# choose the desired command handler
 		self.command_handler = cca_handler()
 
 	def setup_checkerboards(self):
@@ -175,9 +176,12 @@ class live_predicting_window(arcade.Window):
 	def on_update(self, delta_time):
 		# check if done
 		if self.row_index >= self.record_length:
+			print('-'*20)
+			print('Done reading file')
+			print('-'*20)
 			self.exit_window()
 		self.pyboy.tick()
-		# self.on_draw()
+		self.on_draw()
 		# self.exhaust()
 		self.tick += 1
 		self.tick %= FREQUENCY
@@ -185,7 +189,7 @@ class live_predicting_window(arcade.Window):
 			"Starting guess"
 			start = time.time()
 			self.command_handler.predict(self.get_eeg_data())
-			print("Guess done in: {}s".format(time.time() - start))
+			# print("Guess done in: {}s".format(time.time() - start))
 			self.row_index += 128
 
 	# def exhaust(self):
@@ -198,8 +202,11 @@ class live_predicting_window(arcade.Window):
 
 
 	def import_recording(self):
+		# make sure name is ok
 		if 'recordings/' not in self.recording_name:
 			self.recording_name = 'recordings/' + self.recording_name
+		if '.csv' not in self.recording_name:
+			self.recording_name += '.csv'
 		self.recording_data = pd.read_csv(self.recording_name)
 		self.record_length = len(self.recording_data.index)
 
@@ -295,7 +302,8 @@ class live_predicting_window(arcade.Window):
 		exit()
 
 	def main():
-		window = live_predicting_window(0, 0, "Live Predicting Window")
+		# width, height, title, recording_name
+		window = live_predicting_window(0, 0, "Live Predicting Window", 'recordings/first_target_1')
 		window.setup()
 		arcade.run()
 
