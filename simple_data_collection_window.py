@@ -1,6 +1,6 @@
 import os
 from project_constants import FREQUENCY, PATTERN_LENGTH, PADDING, BASE_HEIGHT, BASE_WIDTH, ARROW_SIZE, ARROW_SCALE, \
-    CHECKERBOARD_SIZE, RECORDINGS_PER_ICON, SECONDS_PER_RECORDING, SECONDS_PER_PAUSE, COMMAND_SEND_FREQUENCY
+    CHECKERBOARD_SIZE, RECORDINGS_PER_ICON, SECONDS_PER_RECORDING, SECONDS_PER_PAUSE, SECONDS_PER_FOCUS
 import arcade
 import winsound
 from cortex.cortex import Cortex
@@ -31,7 +31,7 @@ class simple_data_collection_window(arcade.Window):
     # recording control vars
     record_ticks = FREQUENCY * SECONDS_PER_RECORDING
     pause_ticks = FREQUENCY * SECONDS_PER_PAUSE
-    focus_ticks = FREQUENCY * SECONDS_PER_RECORDING
+    focus_ticks = FREQUENCY * SECONDS_PER_FOCUS
     currently_recording = False
     recordings_done = 0
     beep_frequency = 2500
@@ -63,14 +63,14 @@ class simple_data_collection_window(arcade.Window):
     def setup(self):
         self.setup_checkerboards()
         self.load_arrows()
-        # self.setup_cortex()
+        self.setup_cortex()
         self.recording_data = [[] for i in range(len(self.arrow_textures))]
 
     def setup_cortex(self):
         self.cortex = Cortex(None)
         self.cortex.do_prepare_steps()
         self.generator = self.cortex.sub_request(['eeg'])
-        self.recording_data = pd.DataFrame(columns=self.data_columns)
+        # self.recording_data = pd.DataFrame(columns=self.data_columns)
 
     def setup_checkerboards(self):
         # load textures
@@ -143,7 +143,7 @@ class simple_data_collection_window(arcade.Window):
         self.arrow_textures = [self.arrow_textures[i] for i in [1, 3, 4, 6]]
 
     def on_update(self, delta_time):
-        self.on_draw()
+        # self.on_draw()
         self.exhaust()
         self.tick += 1
         self.handle_recording()
@@ -158,12 +158,12 @@ class simple_data_collection_window(arcade.Window):
         winsound.Beep(self.beep_frequency, self.beep_duration)
 
     def exhaust(self):
-        pass
-        # next(self.generator)
+        # pass
+        next(self.generator)
 
     def get_eeg_data_queue(self):
-        return np.ones((128,5))
-        # return next(self.generator).queue
+        # return np.ones((128,5))
+        return next(self.generator).queue
 
     def add_recording(self):
         self.recording_data[self.selected_arrow].append(list(self.get_eeg_data_queue()))
