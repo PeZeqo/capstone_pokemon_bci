@@ -22,22 +22,28 @@ def cvep():
     print_frequency_list()
 
 
-def ssvep():
-    sequences = []
+def ssvep(option):
+    if option == 'simple':
+        frequencies = [7, 11, 17, 31]
+    elif option == 'normal':
+        frequencies = [4, 5, 6, 7, 11, 17, 23, 31]
+    else:
+        print("Must specify only between 'simple' and 'normal' for ssvep pattern generation")
+        return
 
-    for off_bits in range(1,9):
-        sequences.append([1] + [0] * off_bits)
+    sequences = []
+    for frequency in frequencies:
+        sequences.append([1] + [0] * (frequency-1))
+    for frequency in frequencies:
+        print('{} Hz'.format(128 / frequency))
 
     save_frequency_list(sequences)
-    print_frequency_list()
 
 
 def save_frequency_list(sequences):
     with open('flicker_patterns.txt', 'w') as f:
         for sequence in sequences:
             f.write("%s\n" % sequence)
-
-    print_frequency_list()
 
 
 def print_frequency_list():
@@ -51,14 +57,17 @@ def print_frequency_list():
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Must specify 'cvep' or 'ssvep'")
+        print("Must specify 'cvep' or 'ssvep [simple / normal]'")
     else:
-        option = sys.argv[1]
-        if option == 'cvep':
+        method = sys.argv[1]
+        if method == 'cvep':
             cvep()
-        elif option == 'ssvep':
-            ssvep()
+        elif method == 'ssvep':
+            if len(sys.argv) < 3:
+                print("Must specify 'ssvep [simple / normal]'")
+            else:
+                ssvep(sys.argv[2])
         else:
-            print("Must specify 'cvep' or 'ssvep'")
+            print("Must specify 'cvep' or 'ssvep [simple / normal]'")
 
 
