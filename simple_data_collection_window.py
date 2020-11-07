@@ -1,14 +1,15 @@
 import os
 from project_constants import FREQUENCY, PATTERN_LENGTH, PADDING, BASE_HEIGHT, BASE_WIDTH, ARROW_SIZE, ARROW_SCALE, \
-    CHECKERBOARD_SIZE, RECORDINGS_PER_ICON, SECONDS_PER_RECORDING, SECONDS_PER_PAUSE, COMMAND_SEND_FREQUENCY
+    CHECKERBOARD_SIZE, RECORDINGS_PER_ICON, SECONDS_PER_RECORDING, SECONDS_PER_PAUSE, SECONDS_PER_FOCUS
 import arcade
 import winsound
 from cortex.cortex import Cortex
 import pandas as pd
 import numpy as np
+import random
 
 # Class for the testing window
-class data_collection_window(arcade.Window):
+class simple_data_collection_window(arcade.Window):
 
     # screen and image size vars
     screen_width = None
@@ -30,11 +31,15 @@ class data_collection_window(arcade.Window):
     # recording control vars
     record_ticks = FREQUENCY * SECONDS_PER_RECORDING
     pause_ticks = FREQUENCY * SECONDS_PER_PAUSE
+    focus_ticks = FREQUENCY * SECONDS_PER_FOCUS
     currently_recording = False
-    wait_on_user = True
     recordings_done = 0
     beep_frequency = 2500
     beep_duration = 100
+    blank_screen = True
+    focus = False
+    pause = False
+    arrows_to_record = []
 
     # data collection vars
     generator = None
@@ -59,12 +64,13 @@ class data_collection_window(arcade.Window):
         self.setup_checkerboards()
         self.load_arrows()
         self.setup_cortex()
+        self.recording_data = [[] for i in range(len(self.arrow_textures))]
 
     def setup_cortex(self):
         self.cortex = Cortex(None)
         self.cortex.do_prepare_steps()
         self.generator = self.cortex.sub_request(['eeg'])
-        self.recording_data = pd.DataFrame(columns=self.data_columns)
+        # self.recording_data = pd.DataFrame(columns=self.data_columns)
 
     def setup_checkerboards(self):
         # load textures
@@ -94,18 +100,24 @@ class data_collection_window(arcade.Window):
         self.checkerboard_pos_list = []
 
         # prep x,y pairs for where to print checkerboards
-        for x in [half_width - width_offset, half_width, half_width + width_offset]:
-            for y in [half_height - height_offset, half_height, half_height + height_offset]:
+        # ordering is:
+        #   y [top, middle, bottom]
+        #       x [left, middle, right]
+        for y in [half_height + height_offset, half_height, half_height - height_offset]:
+            for x in [half_width - width_offset, half_width, half_width + width_offset]:
                 # skip drawing in the middle of board
                 if x == half_width and y == half_height:
                     continue
                 self.checkerboard_pos_list.append([x, y])
 
+        # only select the non corner positions for simple window
+        self.checkerboard_pos_list = [self.checkerboard_pos_list[i] for i in [1, 3, 4, 6]]
+
     def load_checkerboards(self):
         # Set up dir paths
         dir_path = os.path.dirname(os.path.realpath(__file__))
         image_dir = os.path.join(dir_path, 'images')
-        checkerboard_dir = os.path.join(image_dir, 'checkerboards')
+        checkerboard_dir = os.path.join(image_dir, 'simple')
         icon_list = os.listdir(checkerboard_dir)
 
         # empty texture list, load new textures
@@ -127,12 +139,14 @@ class data_collection_window(arcade.Window):
                 continue
             self.arrow_textures.append(arcade.load_texture(os.path.join(arrow_dir, icon)))
 
+        # only select the non corner positions for simple window
+        self.arrow_textures = [self.arrow_textures[i] for i in [1, 3, 4, 6]]
+
     def on_update(self, delta_time):
         # self.on_draw()
         self.exhaust()
         self.tick += 1
-        if not self.wait_on_user:
-            self.handle_recording()
+        self.handle_recording()
 
         # if self.tick % COMMAND_SEND_FREQUENCY == 0:
         #     self.create_command_task()
@@ -144,42 +158,83 @@ class data_collection_window(arcade.Window):
         winsound.Beep(self.beep_frequency, self.beep_duration)
 
     def exhaust(self):
+        # pass
         next(self.generator)
 
+    def get_eeg_data_queue(self):
+        # return np.ones((128,5))
+        return next(self.generator).queue
+
     def add_recording(self):
-        to_append = np.asarray(list(next(self.generator).queue))
-        a_series = pd.DataFrame(to_append, columns=self.recording_data.columns)
-        self.recording_data = self.recording_data.append(a_series, ignore_index=True)
+        self.recording_data[self.selected_arrow].append(list(self.get_eeg_data_queue()))
+
+    def convert_data_to_df(self, data):
+        total_data = np.asarray(data[0])
+        for data_segment in data[1:]:
+            total_data = np.append(total_data, np.asarray(data_segment), axis=0)
+        return pd.DataFrame(total_data, columns=self.data_columns)
 
     def export_recording(self):
-        self.recording_data.to_csv('recordings\\checkerboard_recording_peter_{}.csv'.format(self.selected_arrow))
-        self.recording_data.drop(self.recording_data.index, inplace=True)
+        index = 0
+        for recording_data in self.recording_data:
+            data_as_df = self.convert_data_to_df(recording_data)
+            data_as_df.to_csv('recordings\\checkerboard_recording_peter_{}.csv'.format(index))
+            index += 1
+
+    def select_next_arrow_randomly(self):
+        next_arrow_index = random.randint(0, len(self.arrows_to_record)-1)
+        print(next_arrow_index, self.arrows_to_record)
+        self.selected_arrow = self.arrows_to_record[next_arrow_index]
+        del self.arrows_to_record[next_arrow_index]
 
     def handle_recording(self):
-        # if not on pause and the allotted pause time has passed, start recording again
-        if not self.currently_recording and self.tick == self.pause_ticks:
+        # if in the 1s blank screen period and a second has passed, go to pause state, choose a random arrow to display
+        if self.blank_screen and self.tick == (FREQUENCY * 2):
+            print("BLANK")
+            self.blank_screen = False
+            self.currently_recording = False
+            self.focus = True
+            self.arrows_to_record = [x for x in range(len(self.arrow_textures))]
+            self.select_next_arrow_randomly()
+            self.tick = 0
+
+        elif self.focus and self.tick == self.focus_ticks:
+            print("FOCUS")
+            self.focus = False
+            self.currently_recording = True
+            self.tick = 0
+            self.beep()
+
+        # if on pause and the allotted pause time has passed, start recording again
+        elif self.pause and self.tick == self.pause_ticks:
+            print("PAUSE")
+            self.pause = False
             self.currently_recording = True
             self.tick = 0
             self.beep()
 
         # if recording and the allotted recording time has passed, start pause again
         elif self.currently_recording and self.tick == self.record_ticks:
+            print("RECORD")
             self.add_recording()
             self.currently_recording = False
-            self.recordings_done += 1
             self.tick = 0
             self.beep()
 
-            # finished all recordings for this icon
-            if self.recordings_done == RECORDINGS_PER_ICON:
-                self.recordings_done = 0
-                self.export_recording()
-                self.wait_on_user = True
+            # finished all recordings for this round (no arrows left unrecorded)
+            if not self.arrows_to_record:
+                self.recordings_done += 1
+                self.blank_screen = True
                 self.selected_arrow += 1
 
                 # went through all arrows, means we recorded all checkerboards
-                if self.selected_arrow == len(self.arrow_textures):
+                if self.recordings_done == RECORDINGS_PER_ICON:
+                    self.export_recording()
                     self.exit_window()
+
+            else:
+                self.pause = True
+                self.select_next_arrow_randomly()
 
     def resize_drawing_vars(self):
         if self.screen_height <= self.screen_width:
@@ -210,14 +265,21 @@ class data_collection_window(arcade.Window):
         arcade.start_render()
 
         # Draw game
-        self.draw_arrow()
+        if not self.blank_screen:
+            self.draw_arrow()
+            self.draw_checkerboards()
+        if self.focus:
+            self.draw_word('FOCUS')
+        if self.pause:
+            self.draw_word('PAUSE')
         self.draw_timer()
-
-        # Draw checkerboards
-        self.draw_checkerboards()
 
         # Finish the render
         arcade.finish_render()
+
+    def draw_word(self, word):
+        arcade.draw_text(word, self.width / 2 - (PADDING * 2) * self.draw_scale, self.height / 2,
+                         arcade.color.WHITE, 100 * self.draw_scale)
 
     def draw_arrow(self):
         arcade.draw_scaled_texture_rectangle(self.width / 2, self.height / 2, self.arrow_textures[self.selected_arrow],
@@ -245,21 +307,14 @@ class data_collection_window(arcade.Window):
 
             arcade.draw_scaled_texture_rectangle(pos[0], pos[1], texture, self.draw_scale, 0)
 
-    def on_key_press(self, key, key_modifiers):
-        # switch statement to control data collection
-        if (key == arcade.key.SPACE):
-            self.wait_on_user = False
-            self.currently_recording = False
-            self.tick = 0
-
     def exit_window(self):
         exit()
 
     def main():
-        window = data_collection_window(0, 0, "Data Collection Window")
+        window = simple_data_collection_window(0, 0, "Simple Data Collection Window")
         window.setup()
         arcade.run()
 
 
 if __name__ == "__main__":
-    data_collection_window.main()
+    simple_data_collection_window.main()
