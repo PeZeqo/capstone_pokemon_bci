@@ -5,14 +5,12 @@ from sklearn.cross_decomposition import CCA
 from joblib import load
 from matplotlib import pyplot as plt
 
-# from FilterClass import Filter
+from FilterClass import Filter
 
 class cca_handler():
 
 	def __init__(self, plotting=False):
-		self.num_targets = 8
 		self.sampling_rate = 128.0
-		# self.frequencies = [30.0, 20.0, 15.0, 12.0, 10.0,   8.57, 7.5, 6.67]
 		# frequencies calculated by frames/len(array) as seen in flicker_patterns.txt
 		self.frequencies = [32.0, 21.33, 14.22, 42.67, 16.0, 64.0, 25.6, 18.29]
 		# prediction should be targets 1 to num_targets, not 0 to num_targets - 1
@@ -34,6 +32,8 @@ class cca_handler():
 		self.plotting = plotting
 		if self.plotting:
 			self.start_plot()
+
+		self.filter_obj = Filter()
 		
 
 	def start_plot(self):
@@ -84,11 +84,11 @@ class cca_handler():
 		return result
 
 	def filter(self, data):
-		pass
+		return self.filter_obj.fir(data)
 
 	def predict(self, data):
 		# pass in the 1s sample
-		# data = self.filter(data)
+		data = self.filter(data)
 		corrs = self.findCorr(data, self.ref_signals)
 		self.prediction = np.argmax(corrs)
 		print("Predicted Target: {}".format(self.prediction))
