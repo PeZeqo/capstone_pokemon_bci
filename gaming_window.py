@@ -10,6 +10,7 @@ from pyboy.utils import WindowEvent
 import arcade
 import ctypes
 from command_handler import command_handler
+from cca_train import cca_handler
 import numpy as np
 import pandas as pd
 from cortex.cortex import Cortex
@@ -79,7 +80,8 @@ class gaming_window(arcade.Window):
         self.setup_cortex()
 
     def setup_command_handler(self):
-        self.command_handler = command_handler()
+        # self.command_handler = command_handler()
+        self.command_handler = cca_handler()
 
     def setup_cortex(self):
         self.cortex = Cortex(None)
