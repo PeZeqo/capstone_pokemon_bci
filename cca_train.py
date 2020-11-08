@@ -5,9 +5,11 @@ from sklearn.cross_decomposition import CCA
 from joblib import load
 from matplotlib import pyplot as plt
 
+# from FilterClass import Filter
+
 class cca_handler():
 
-	def __init__(self):
+	def __init__(self, plotting=False):
 		self.num_targets = 8
 		self.sampling_rate = 128.0
 		# self.frequencies = [30.0, 20.0, 15.0, 12.0, 10.0,   8.57, 7.5, 6.67]
@@ -27,21 +29,27 @@ class cca_handler():
 
 		self.fig = None
 		self.ax = None
+		self.plotter = None
 
-		self.start_plot()
+		self.plotting = plotting
+		if self.plotting:
+			self.start_plot()
+		
 
 	def start_plot(self):
 		self.fig, self.ax = plt.subplots(figsize=(10 ,5))
 		# just use target 0 for this exercise
-		for row in self.ref_signals[0]:
-			self.ax.plot(row, alpha=0.3)
+		# for row in self.ref_signals[0]:
+		# 	self.ax.plot(row, alpha=0.3)
 		self.fig.show()
-		self.fig.canvas.draw()
+		# self.fig.canvas.draw()
 
 	def plot_signals(self, data):
 		# plot columns data - data is 128 x 4
+		self.ax.cla()
 		for col in data.T:
 			self.ax.plot(col)
+		# plt.pause(0.01)
 		self.fig.canvas.draw()
 
 
@@ -76,14 +84,7 @@ class cca_handler():
 		return result
 
 	def filter(self, data):
-		# data shape is 128 x 4 - just channels
-		# do pca fit and inverse
-		self.pca.fit(data)
-		components = self.pca.transform(data)
-		pca_approx = self.pca.inverse_transform(components)
-		# scale, normalize
-		norm = pca_approx / np.linalg.norm(pca_approx)
-		return norm
+		pass
 
 	def predict(self, data):
 		# pass in the 1s sample
@@ -91,9 +92,10 @@ class cca_handler():
 		corrs = self.findCorr(data, self.ref_signals)
 		self.prediction = np.argmax(corrs)
 		print("Predicted Target: {}".format(self.prediction))
-		self.plot_signals(data)
+		if self.plotting:
+			self.plot_signals(data)
 
-		# self.command_to_keyboard_action(self.prediction + 1)
+		self.command_to_keyboard_action(self.prediction + 1)
 
 
 	def press_release(self, key):
