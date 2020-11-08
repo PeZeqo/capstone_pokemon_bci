@@ -16,7 +16,7 @@ from cortex.cortex import Cortex
 import time
 
 # Class for the testing window
-class gaming_window(arcade.Window):
+class simple_window(arcade.Window):
 
     # screen and image size vars
     screen_width = None
@@ -74,9 +74,9 @@ class gaming_window(arcade.Window):
         self.print_stage("PYBOY SETUP")
         self.setup_pyboy()
         self.print_stage("COMMAND HANDLER SETUP")
-        self.setup_command_handler()
+        # self.setup_command_handler()
         self.print_stage("CORTEX SETUP")
-        self.setup_cortex()
+        # self.setup_cortex()
 
     def setup_command_handler(self):
         self.command_handler = command_handler()
@@ -124,11 +124,14 @@ class gaming_window(arcade.Window):
                     continue
                 self.checkerboard_pos_list.append([x, y])
 
+        # only select the non corner positions for simple window
+        self.checkerboard_pos_list = [self.checkerboard_pos_list[i] for i in [1, 3, 4, 6]]
+
     def load_checkerboards(self):
         # Set up dir paths
         dir_path = os.path.dirname(os.path.realpath(__file__))
         image_dir = os.path.join(dir_path, 'images')
-        checkerboard_dir = os.path.join(image_dir, 'checkerboards')
+        checkerboard_dir = os.path.join(image_dir, 'simple')
         icon_list = os.listdir(checkerboard_dir)
 
         # empty texture list, load new textures
@@ -154,15 +157,15 @@ class gaming_window(arcade.Window):
 
     def on_update(self, delta_time):
         self.pyboy.tick()
-        # self.on_draw()
-        self.exhaust()
+        self.on_draw()
+        # self.exhaust()
         self.tick += 1
         self.tick %= FREQUENCY
-        if self.tick % COMMAND_SEND_FREQUENCY == 0:
-            "Starting guess"
-            start = time.time()
-            self.command_handler.predict(self.get_eeg_data())
-            print("Guess done in: {}s".format(time.time() - start))
+        # if self.tick % COMMAND_SEND_FREQUENCY == 0:
+        #     "Starting guess"
+        #     start = time.time()
+        #     self.command_handler.predict(self.get_eeg_data())
+        #     print("Guess done in: {}s".format(time.time() - start))
 
     def exhaust(self):
         next(self.generator)
@@ -254,10 +257,10 @@ class gaming_window(arcade.Window):
                 self.pyboy.tick()
 
     def main():
-        game = gaming_window(0, 0, "Game Window")
+        game = simple_window(0, 0, "Simple Window")
         game.setup()
         arcade.run()
 
 
 if __name__ == "__main__":
-    gaming_window.main()
+    simple_window.main()
