@@ -1,4 +1,3 @@
-from pynput.keyboard import Key, Controller
 import pywt
 import pandas as pd
 import numpy as np
@@ -12,9 +11,10 @@ from joblib import load
 class command_handler():
     ml_model = None
     pca = None
-    keyboard = Controller()
+    controller = None
 
-    def __init__(self):
+    def __init__(self, controller):
+        self.controller = controller
         self.load_model_from_json()
         self.ml_model.predict(np.ones((1,12,128)))
         self.pca = load('models\pca')
@@ -58,30 +58,26 @@ class command_handler():
         command = np.argmax(pred)
         return command
 
-    def press_release(self, key):
-        self.keyboard.press(key)
-        self.keyboard.release(key)
-
     def command_to_keyboard_action(self, command):
         # command 0 is no-action
         if command == 0:
             return
         elif command == 1:
-            self.press_release('x')
+            self.controller.send_command('x')
         elif command == 2:
-            self.press_release(Key.up)
+            self.controller.send_command('up')
         elif command == 3:
-            self.press_release('z')
+            self.controller.send_command('z')
         elif command == 4:
-            self.press_release(Key.left)
+            self.controller.send_command('left')
         elif command == 5:
-            self.press_release(Key.right)
+            self.controller.send_command('right')
         elif command == 6:
-            self.press_release(Key.enter)
+            self.controller.send_command('start')
         elif command == 7:
-            self.press_release(Key.down)
+            self.controller.send_command('down')
         elif command == 8:
-            self.press_release(Key.shift_r)
+            self.controller.send_command('select')
 
     def predict(self, eeg_data):
         # filter data

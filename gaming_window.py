@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 from cortex.cortex import Cortex
 import time
+from pyboy_controller import pyboy_controller
 
 # Class for the testing window
 class gaming_window(arcade.Window):
@@ -43,8 +44,9 @@ class gaming_window(arcade.Window):
     generator = None
     cortex = None
 
-    # ML vars
+    # controller vars
     command_handler = None
+    controller = None
 
     def __init__(self, width, height, title):
         # scale the game width to make the game screen bigger
@@ -73,13 +75,18 @@ class gaming_window(arcade.Window):
         self.setup_checkerboards()
         self.print_stage("PYBOY SETUP")
         self.setup_pyboy()
+        self.print_stage("CONTROLLER SETUP")
+        self.setup_controller()
         self.print_stage("COMMAND HANDLER SETUP")
-        self.setup_command_handler()
+        # self.setup_command_handler()
         self.print_stage("CORTEX SETUP")
-        self.setup_cortex()
+        # self.setup_cortex()
+
+    def setup_controller(self):
+        self.controller = pyboy_controller(self.pyboy)
 
     def setup_command_handler(self):
-        self.command_handler = command_handler()
+        self.command_handler = command_handler(self.controller)
 
     def setup_cortex(self):
         self.cortex = Cortex(None)
