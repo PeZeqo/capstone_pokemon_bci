@@ -38,11 +38,7 @@ class cca_handler():
 
 	def start_plot(self):
 		self.fig, self.ax = plt.subplots(figsize=(10 ,5))
-		# just use target 0 for this exercise
-		# for row in self.ref_signals[0]:
-		# 	self.ax.plot(row, alpha=0.3)
 		self.fig.show()
-		# self.fig.canvas.draw()
 
 	def plot_signals(self, data):
 		# plot columns data - data is 128 x 4
@@ -95,7 +91,7 @@ class cca_handler():
 		if self.plotting:
 			self.plot_signals(data)
 
-		self.command_to_keyboard_action(self.prediction + 1)
+		# self.command_to_keyboard_action(self.prediction + 1)
 
 
 	def press_release(self, key):

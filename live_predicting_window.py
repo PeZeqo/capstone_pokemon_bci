@@ -186,7 +186,6 @@ class live_predicting_window(arcade.Window):
 		self.tick += 1
 		self.tick %= FREQUENCY
 		if self.tick % COMMAND_SEND_FREQUENCY == 0:
-			"Starting guess"
 			start = time.time()
 			self.command_handler.predict(self.get_eeg_data())
 			# print("Guess done in: {}s".format(time.time() - start))
